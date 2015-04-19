@@ -129,7 +129,7 @@
                     dataType: 'json',
                     contentType: "application/json; charset=utf-8",
                     
-                    success: function (data) {
+                    s: function (data) {
 			
                        if ( isError(data) ) {
 
@@ -147,7 +147,9 @@
                 
                                 $('#subbscribe').remove();
                                 setCookie('subbscribe-hidden', 1, 365); // Hide for a year
-                                settings.onSubbscribe.call();
+                                if(typeof settings.onSubbscribe === 'function'){
+                                    settings.onSubbscribe.call();
+                                }
 
                             });
 
