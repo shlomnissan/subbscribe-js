@@ -19,7 +19,8 @@
             name         : 'Subbscribe',
             color        : '#ee6262',
             thumbnail    : 'https://s3-ap-southeast-2.amazonaws.com/subbscribe/img/avatar.png',
-            emailonly	 : false
+            emailonly	 : false,
+            cm_mail_field   : '',
 	}, options);
 
         // Make sure a URL has been passed through
@@ -29,6 +30,14 @@
             return;
 
         };
+        
+        //make sure the cm_mail_field is set when using Campaign Monitor
+        if( settings.list === 'CampaignMonitor' && !settings.cm_mail_field.length ){
+
+            console.log('You must provide the mail input name. Found in the form code from CampainMonitor');
+            return;
+
+        }
 	
 	var _name 	= '';
 	var _email 	= '';
@@ -47,7 +56,7 @@
 	else if ( settings.list == 'CampaignMonitor' ) {
 
 		_name 	= 'cm-name';
-		_email 	= 'cm-jydlht-jydlht';
+		_email 	= settings.cm_mail_field;
 		_action	= settings.url  + "?callback=?";
 
 	}
@@ -147,7 +156,10 @@
                 
                                 $('#subbscribe').remove();
                                 setCookie('subbscribe-hidden', 1, 365); // Hide for a year
-                                settings.onSubbscribe.call();
+                                
+                                if(typeof settings.onSubbscribe === 'function'){
+                                    settings.onSubbscribe.call();
+                                }
 
                             });
 
