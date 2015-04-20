@@ -82,107 +82,107 @@
 
 
     // HTML
-        var html = '<div id="subbscribe"> <div class="subb-title">' + settings.title + ' <img class="close-x" src="https://s3-ap-southeast-2.amazonaws.com/subbscribe/img/close.svg" />  </div> <div class="subb-body"> <div class="subb-hidden"> <div class="subb-thumbnail"> <img style="width: 40px; height: 40px;" src="' + settings.thumbnail + '" /> </div> <div class="subb-hidden"> <div class="subb-site"> &nbsp;' + settings.name + ' </div> <button class="subb-button show-form">Subscribe</button> </div> </div> <div class="subb-form" style="display: none"> <p>' + settings.text + '</p> <form id="mc-embedded-subbscribe-form" method="post" action="' + settings.url + '"> <div class="subbscribe-alert subbscribe-error" style="display: none">Oops! Check your details and try again.</div> <div class="subbscribe-alert subbscribe-success" style="display: none">'+settings.succes_message+'</div> <div class="text-input"> ' + nameInput + ' </div> <div class="text-input"> ' + emailInput + ' </div> <button class="subb-button submit-form" type="submit" style="width: 100%; margin-bottom: 10px;">Subscribe</button></form> <div class="footer">Powered by <a href="http://www.subbscribe.com" target="_blank">Subbscribe.com</a></div> </div> </div> </div>';
+    var html = '<div id="subbscribe"> <div class="subb-title">' + settings.title + ' <img class="close-x" src="https://s3-ap-southeast-2.amazonaws.com/subbscribe/img/close.svg" />  </div> <div class="subb-body"> <div class="subb-hidden"> <div class="subb-thumbnail"> <img style="width: 40px; height: 40px;" src="' + settings.thumbnail + '" /> </div> <div class="subb-hidden"> <div class="subb-site"> &nbsp;' + settings.name + ' </div> <button class="subb-button show-form">Subscribe</button> </div> </div> <div class="subb-form" style="display: none"> <p>' + settings.text + '</p> <form id="mc-embedded-subbscribe-form" method="post" action="' + settings.url + '"> <div class="subbscribe-alert subbscribe-error" style="display: none">Oops! Check your details and try again.</div> <div class="subbscribe-alert subbscribe-success" style="display: none">'+settings.succes_message+'</div> <div class="text-input"> ' + nameInput + ' </div> <div class="text-input"> ' + emailInput + ' </div> <button class="subb-button submit-form" type="submit" style="width: 100%; margin-bottom: 10px;">Subscribe</button></form> <div class="footer">Powered by <a href="http://www.subbscribe.com" target="_blank">Subbscribe.com</a></div> </div> </div> </div>';
 
-        if(getCookie('subbscribe-hidden') != 1) {
+    if(getCookie('subbscribe-hidden') != 1) {
 
-            this.append(html);
-            $('#subbscribe').css('width', $('.subb-site').width() + 200 );
-        $('#subbscribe').addClass('animated slideInRight');
+        this.append(html);
+        $('#subbscribe').css('width', $('.subb-site').width() + 200 );
+    $('#subbscribe').addClass('animated slideInRight');
 
-        }
+    }
 
-        // Update CSS classes
-        $('#subbscribe .subb-button').css('background-color', settings.color);
+    // Update CSS classes
+    $('#subbscribe .subb-button').css('background-color', settings.color);
 
-        /*
-        ===============================================================================
-          Events
-        ===============================================================================
-        */
+    /*
+    ===============================================================================
+      Events
+    ===============================================================================
+    */
 
-        $('#subbscribe .close-x').click(function(){
+    $('#subbscribe .close-x').click(function(){
 
-            $('#subbscribe').toggleClass('slideInRight fadeOut');
-            $('#subbscribe').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
+        $('#subbscribe').toggleClass('slideInRight fadeOut');
+        $('#subbscribe').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
 
-                $('#subbscribe').remove();
-                setCookie('subbscribe-hidden', 1, 1); // Hide for a day
+            $('#subbscribe').remove();
+            setCookie('subbscribe-hidden', 1, 1); // Hide for a day
+
+        });
+
+        settings.onClose.call();
+        
+    });
+
+    $('#subbscribe .show-form').click(function(){
+
+        $('#subbscribe .subb-hidden').hide();
+        $('#subbscribe .subb-form').show();
+
+    });
+
+    $('#mc-embedded-subbscribe-form').submit(function(e){
+
+       e.preventDefault();
+
+       if( formValidation() ) {
+
+            $('#subbscribe .subbscribe-error').slideUp();
+            $('#subbscribe .submit-form').attr('disabled', 'disabled');
+
+            $.ajax({
+
+                url: _action,
+                type: 'post',
+                data: $(this).serialize(),
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                
+                success: function (data) {
+        
+                   if ( isError(data) ) {
+
+                        console.log('Subbscribe Error: submission failed.');
+
+                   } 
+           else {
+
+                        //SUCCESS
+                        resetFormFields()
+                        $('.subbscribe-success').slideDown();
+                        
+                        setTimeout(function(){ $('#subbscribe').addClass('animated fadeOut'); }, 2000);
+                        $('#subbscribe').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
+            
+                            $('#subbscribe').remove();
+                            setCookie('subbscribe-hidden', 1, 365); // Hide for a year
+                            
+                            if(typeof settings.onSubbscribe === 'function'){
+                                settings.onSubbscribe.call();
+                            }
+
+                        });
+
+                   }
+                }
 
             });
 
-            settings.onClose.call();
-            
-        });
+       } else {
 
-        $('#subbscribe .show-form').click(function(){
+            $('#subbscribe .subbscribe-error').slideDown();
 
-            $('#subbscribe .subb-hidden').hide();
-            $('#subbscribe .subb-form').show();
+       }
 
-        });
+    });
 
-        $('#mc-embedded-subbscribe-form').submit(function(e){
+    /*
+    ===============================================================================
+      Helpers
+    ===============================================================================
+    */
 
-           e.preventDefault();
-
-           if( formValidation() ) {
-
-                $('#subbscribe .subbscribe-error').slideUp();
-                $('#subbscribe .submit-form').attr('disabled', 'disabled');
-
-                $.ajax({
-
-                    url: _action,
-                    type: 'post',
-                    data: $(this).serialize(),
-                    dataType: 'json',
-                    contentType: "application/json; charset=utf-8",
-                    
-                    success: function (data) {
-            
-                       if ( isError(data) ) {
-
-                            console.log('Subbscribe Error: submission failed.');
-
-                       } 
-               else {
-
-                            //SUCCESS
-                            resetFormFields()
-                            $('.subbscribe-success').slideDown();
-                            
-                            setTimeout(function(){ $('#subbscribe').addClass('animated fadeOut'); }, 2000);
-                            $('#subbscribe').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){
-                
-                                $('#subbscribe').remove();
-                                setCookie('subbscribe-hidden', 1, 365); // Hide for a year
-                                
-                                if(typeof settings.onSubbscribe === 'function'){
-                                    settings.onSubbscribe.call();
-                                }
-
-                            });
-
-                       }
-                    }
-
-                });
-
-           } else {
-
-                $('#subbscribe .subbscribe-error').slideDown();
-
-           }
-
-        });
-
-        /*
-        ===============================================================================
-          Helpers
-        ===============================================================================
-        */
-    
     function isError(data) {
         
         console.log( data );
