@@ -12,15 +12,17 @@
 
         // Default settings
         var settings = $.extend({
-	    list	 : 'MailChimp',
-            url          : '',
-            title        : 'Never miss a post!',
-            text         : 'Get our latest posts and announcements in your inbox. You won\'t regret it!',
-            name         : 'Subbscribe',
-            color        : '#ee6262',
-            thumbnail    : 'https://s3-ap-southeast-2.amazonaws.com/subbscribe/img/avatar.png',
-            emailonly	 : false
-	}, options);
+            list            : 'MailChimp',
+            url             : '',
+            title           : 'Never miss a post!',
+            succes_message  : 'Thanks! Check your email for confirmation.',
+            text            : 'Get our latest posts and announcements in your inbox. You won\'t regret it!',
+            name            : 'Subbscribe',
+            color           : '#ee6262',
+            thumbnail       : 'https://s3-ap-southeast-2.amazonaws.com/subbscribe/img/avatar.png',
+            emailonly       : false,
+            cm_mail_field   : '', 
+        }, options);
 
         // Make sure a URL has been passed through
         if ( settings.url == '' ) {
@@ -29,56 +31,64 @@
             return;
 
         };
-	
-	var _name 	= '';
-	var _email 	= '';
-	var _url 	= '';
 
-	// Make sure list is either set to MailChimp or CampaignMonitor
-	// Change field names if yours don’t match
+        //make sure the cm_mail_field is set when using Campain Monitor
+        if( settings.list === 'CampaignMonitor' && !settings.cm_mail_field.length ){
 
-	if( settings.list == 'MailChimp' ) {
-		
-		_name 	= 'NAME';
-		_email 	= 'EMAIL';
-		_action	= settings.url.replace('/post?', '/post-json?').concat('&c=?');
+            console.log('You must provide the mail input name. Found in the form code from CampainMonitor');
+            return;
 
-	}
-	else if ( settings.list == 'CampaignMonitor' ) {
+        }
+    
+        var _name   = '';
+        var _email  = '';
+        var _url    = '';
 
-		_name 	= 'cm-name';
-		_email 	= 'cm-jydlht-jydlht';
-		_action	= settings.url  + "?callback=?";
+        // Make sure list is either set to MailChimp or CampaignMonitor
+        // Change field names if yours don’t match
 
-	}
-	else {
+        if( settings.list == 'MailChimp' ) {
+            
+            _name   = 'NAME';
+            _email  = 'EMAIL';
+            _action = settings.url.replace('/post?', '/post-json?').concat('&c=?');
 
-		console.log('Subbscribe Error: list value must be set to MailChimp or CampaignMonitor');
-		return;
+        }
+        else if ( settings.list == 'CampaignMonitor' ) {
 
-	}
-	
-	// Separate the input fields from the HTML
-	// if emailonly is set, nameInput should be blank
+            _name   = 'cm-name';
+            _email  = settings.cm_mail_field;
+            _action = settings.url  + "?callback=?";
 
-	var nameInput 	= '';
-	var emailInput 	= '<input type="email" name="' + _email + '" id="subb-EMAIL" placeholder="Email Address" />';
-	
-	if( !settings.emailonly ) {
+        }
+        else {
 
-		nameInput = ' <input type="text" name="' + _name + '" id="subb-NAME" placeholder="Name" />';
+            console.log('Subbscribe Error: list value must be set to MailChimp or CampaignMonitor');
+            return;
 
-	}
+        }
+    
+        // Separate the input fields from the HTML
+        // if emailonly is set, nameInput should be blank
+
+        var nameInput   = '';
+        var emailInput  = '<input type="email" name="' + _email + '" id="subb-EMAIL" placeholder="Email Address" />';
+        
+        if( !settings.emailonly ) {
+
+            nameInput = ' <input type="text" name="' + _name + '" id="subb-NAME" placeholder="Name" />';
+
+        }
 
 
-	// HTML
-        var html = '<div id="subbscribe"> <div class="subb-title">' + settings.title + ' <img class="close-x" src="https://s3-ap-southeast-2.amazonaws.com/subbscribe/img/close.svg" />  </div> <div class="subb-body"> <div class="subb-hidden"> <div class="subb-thumbnail"> <img style="width: 40px; height: 40px;" src="' + settings.thumbnail + '" /> </div> <div class="subb-hidden"> <div class="subb-site"> &nbsp;' + settings.name + ' </div> <button class="subb-button show-form">Subscribe</button> </div> </div> <div class="subb-form" style="display: none"> <p>' + settings.text + '</p> <form id="mc-embedded-subbscribe-form" method="post" action="' + settings.url + '"> <div class="subbscribe-alert subbscribe-error" style="display: none">Oops! Check your details and try again.</div> <div class="subbscribe-alert subbscribe-success" style="display: none">Thanks! Check your email for confirmation.</div> <div class="text-input"> ' + nameInput + ' </div> <div class="text-input"> ' + emailInput + ' </div> <button class="subb-button submit-form" type="submit" style="width: 100%; margin-bottom: 10px;">Subscribe</button></form> <div class="footer">Powered by <a href="http://www.subbscribe.com" target="_blank">Subbscribe.com</a></div> </div> </div> </div>';
+        // HTML
+        var html = '<div id="subbscribe"> <div class="subb-title">' + settings.title + ' <img class="close-x" src="https://s3-ap-southeast-2.amazonaws.com/subbscribe/img/close.svg" />  </div> <div class="subb-body"> <div class="subb-hidden"> <div class="subb-thumbnail"> <img style="width: 40px; height: 40px;" src="' + settings.thumbnail + '" /> </div> <div class="subb-hidden"> <div class="subb-site"> &nbsp;' + settings.name + ' </div> <button class="subb-button show-form">Subscribe</button> </div> </div> <div class="subb-form" style="display: none"> <p>' + settings.text + '</p> <form id="mc-embedded-subbscribe-form" method="post" action="' + settings.url + '"> <div class="subbscribe-alert subbscribe-error" style="display: none">Oops! Check your details and try again.</div> <div class="subbscribe-alert subbscribe-success" style="display: none">'+settings.succes_message+'</div> <div class="text-input"> ' + nameInput + ' </div> <div class="text-input"> ' + emailInput + ' </div> <button class="subb-button submit-form" type="submit" style="width: 100%; margin-bottom: 10px;">Subscribe</button></form> <div class="footer">Powered by <a href="http://www.subbscribe.com" target="_blank">Subbscribe.com</a></div> </div> </div> </div>';
 
         if(getCookie('subbscribe-hidden') != 1) {
 
             this.append(html);
             $('#subbscribe').css('width', $('.subb-site').width() + 200 );
-	    $('#subbscribe').addClass('animated slideInRight');
+            $('#subbscribe').addClass('animated slideInRight');
 
         }
 
@@ -130,13 +140,13 @@
                     contentType: "application/json; charset=utf-8",
                     
                     success: function (data) {
-			
+            
                        if ( isError(data) ) {
 
-                           	console.log('Subbscribe Error: submission failed.');
+                            console.log('Subbscribe Error: submission failed.');
 
                        } 
-		       else {
+                        else {
 
                             //SUCCESS
                             resetFormFields()
@@ -147,7 +157,10 @@
                 
                                 $('#subbscribe').remove();
                                 setCookie('subbscribe-hidden', 1, 365); // Hide for a year
-                                settings.onSubbscribe.call();
+                                
+                                if(typeof settings.onSubbscribe === 'function'){
+                                    settings.onSubbscribe.call();
+                                }
 
                             });
 
@@ -169,38 +182,38 @@
           Helpers
         ===============================================================================
         */
-	
-	function isError(data) {
-		
-		console.log( data );
 
-		if ( settings.list == 'MailChimp' ) {
+        function isError(data) {
+            
+            console.log( data );
 
-			if( data['result'] != "success" ) {
+            if ( settings.list == 'MailChimp' ) {
 
-				return true;
+                if( data['result'] != "success" ) {
 
-			}
+                    return true;
 
-			return false;
+                }
 
-		}
-		else if ( settings.list == 'CampaignMonitor' ) {
+                return false;
 
-			if( data.Status === 400 ) {
+            }
+            else if ( settings.list == 'CampaignMonitor' ) {
 
-				return true;
+                if( data.Status === 400 ) {
 
-			}
-			
-			return false;
+                    return true;
 
-		}
+                }
+                
+                return false;
 
-		return true;
+            }
 
-	}
-		
+            return true;
+
+        }
+        
         function resetFormFields() {
 
             $('#subbscribe input').each(function(){
@@ -222,12 +235,12 @@
             var name    = $('#subb-NAME');
             var email   = $('#subb-EMAIL');
 
-	    if( !settings.emailonly ) {
-		
-		if( name.val().length < 2 ) {
+            if( !settings.emailonly ) {
+            
+                if( name.val().length < 2 ) {
 
                     valid = false;
-    	            name.addClass('error');
+                    name.addClass('error');
 
                 } else {
 
@@ -235,7 +248,7 @@
 
                 }
 
-	    }
+            }
             
             if ( !validateEmail( email.val() ) ) {
 
@@ -251,7 +264,7 @@
             return valid;
 
         }
-	
+    
         function setCookie(cname, cvalue, exdays) {
             
             var d = new Date();
